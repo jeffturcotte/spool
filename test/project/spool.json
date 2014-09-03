@@ -1,0 +1,23 @@
+{
+	"package": "spool_test_project",
+
+	"services": [
+		{
+			"name": "db",
+			"image": "postgres:9.3"
+		},
+		{
+			"name": "app",
+			"proxy": true,
+			"build": ".",
+			"link": [ "db" ]
+		},
+		{
+			"name": "ssh",
+			"build": "services/ssh",
+			"volumes": [ "app" ],
+			"publishAllPorts": true,
+			"persist": true
+		}
+	]
+}
