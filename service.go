@@ -190,7 +190,7 @@ func (p *Package) ListContainers(client *docker.Client, env string) ([]*docker.C
 
 	for _, apiContainer := range apiContainers {
 		container, _ := client.InspectContainer(apiContainer.ID)
-		serviceContainer := containerToServiceInfo(container)
+		serviceContainer := ContainerToServiceInfo(container)
 		if serviceContainer.Package == p.Package && serviceContainer.Env == env {
 			containers = append(containers, container)
 		}
@@ -213,7 +213,7 @@ func (service *Service) ListContainers(client *docker.Client, env string) ([]*do
 
 	for _, apiContainer := range apiContainers {
 		container, _ := client.InspectContainer(apiContainer.ID)
-		serviceInfo := containerToServiceInfo(container)
+		serviceInfo := ContainerToServiceInfo(container)
 
 		if serviceInfo.Package == service.Package.Package &&
 			serviceInfo.Service == service.Name &&
@@ -234,7 +234,7 @@ func (s *Service) getContainerName(env string, uid string) string {
 	return fmt.Sprintf("%s-%s-%s-%s", s.Package.Package, env, s.Name, uid)
 }
 
-func containerToServiceInfo(container *docker.Container) ServiceContainer {
+func ContainerToServiceInfo(container *docker.Container) ServiceContainer {
 	pattern := "^/(.*)-(.*)-(.*)-(.*)$"
 	s := ServiceContainer{}
 

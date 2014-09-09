@@ -223,14 +223,18 @@ func inspect(cmd *cobra.Command, args []string) {
 		c, err := client.InspectContainer(container.ID)
 		assert(err)
 
+		service := ContainerToServiceInfo(c)
 		network := c.NetworkSettings
 		ipAddress := network.IPAddress
 		ports := network.Ports
 
 		for port, _ := range ports {
 			line := fmt.Sprintf(
-				"%s %s %s",
-				c.Name,
+				"%s %s %s %s %s %s",
+				service.UID,
+				service.Package,
+				service.Env,
+				service.Service,
 				ipAddress,
 				port,
 			)
