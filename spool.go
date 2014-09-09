@@ -83,7 +83,13 @@ func main() {
 		Run:   destroy,
 	}
 
-	rootCmd.AddCommand(cmdUp, cmdStop, cmdDestroy)
+	var cmdInspect = &cobra.Command{
+		Use:   "inspect [env]",
+		Short: "Inspects an environment",
+		Run:   inspect,
+	}
+
+	rootCmd.AddCommand(cmdUp, cmdStop, cmdDestroy, cmdInspect)
 
 	rootCmd.PersistentFlags().StringVar(&configFile, "config", cwd+"/spool.json",
 		"The full path of a config file")
@@ -195,6 +201,42 @@ func stop(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Println(yellow("Done!"))
+}
+
+func inspect(cmd *cobra.Command, args []string) {
+	if len(args) < 1 {
+		log.Fatal("Not enough arguments")
+	}
+
+	env := args[0]
+
+	p, err := NewPackage(configFile)
+	assert(err)
+
+	client, err := docker.NewClient(dockerHost)
+	assert(err)
+
+	containers, err := p.ListContainers(client, env)
+	assert(err)
+
+	for _, container := range containers {
+		c, err := client.InspectContainer(container.ID)
+		assert(err)
+
+		network := c.NetworkSettings
+		ipAddress := network.IPAddress
+		ports := network.Ports
+
+		for port, _ := range ports {
+			line := fmt.Sprintf(
+				"%s %s %s",
+				c.Name,
+				ipAddress,
+				port,
+			)
+			fmt.Println(line)
+		}
+	}
 }
 
 func destroy(cmd *cobra.Command, args []string) {
